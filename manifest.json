@@ -1,16 +1,8 @@
 {
-    "manifest_version": 2,
+    "author": "PhishMe, Inc.",
+    "manifest_version": 3,
     "name": "PhishMeNot",
     "version": "1.0",
-    "description": "A browser extension that helps protect against phishing attacks.",
-    "icons": {
-        "16": "icon16.png",
-        "48": "icon48.png",
-        "128": "icon128.png"
-    },
-    
-    "browser_action": {
-        "default_icon": "icon16.png",
-        "default_popup": "popup.html"
-    }
+    "description": "A browser extension that helps protect against phishing attacks."
 }
+
