@@ -1,0 +1,15 @@
+{
+    "manifest_version": 3,
+    "name": "PhishMeNot",
+    "version": "1.0",
+    "description": "Phishing protection extension",
+    "permissions": ["storage", "activeTab", "webRequest"],
+    "host_permissions": ["<all_urls>"],
+    "background": {
+      "service_worker": "chrome.js"
+    },
+    "action": {
+      "default_popup": "popup.html",
+      "default_icon": "images/icon.png"
+    }
+}
