@@ -30,6 +30,15 @@ Safari support coming soon.
 
 ## How to Use
 
+#### After downloading the project.
+
+### From the config plugin
+
+- Enable developer mode.
+- Click on "load the non-embedded extension" at the top left.
+- Choose the project folder.
+- Enjoy it!!
+
 1. Once installed, the PhishMeNot icon will appear on your browser toolbar.
 2. Visit the dashboard by clicking on the icon to customize your settings.
 3. The extension will run in the background, scanning emails and websites.
