@@ -1,16 +1,20 @@
 {
-	"manifest_version": 2,
+	"manifest_version": 3,
 	"name": "PhishMeNot",
 	"version": "1.0",
-	"description": "Phishing protection extension",
-	"permissions": ["storage", "activeTab", "webRequest", "<all_urls>"],
+	"description": "PhishMeNot allows you to surf the web and check your email safely by warning you of suspected phishing attempts.",
+	"permissions": ["storage", "activeTab", "webRequest"],
+	"host_permissions": ["<all_urls>"],
 	"background": {
-	  "scripts": ["chrome.js"],
-	  "persistent": false
+	  "service_worker": "chrome.js"
 	},
-	"browser_action": {
+	"action": {
 	  "default_popup": "popup.html",
-	  "default_icon": "images/icon.png"
+	  "default_icon": {
+		"16": "images/icon_16.png",
+		"32": "images/icon_32.png",
+		"192": "images/icon_192.png"
+	  }
 	}
   }
   
