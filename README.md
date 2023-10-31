@@ -28,6 +28,8 @@ PhishMeNot is a browser extension designed to combat phishing attempts by analyz
 
 Safari support coming soon.
 
+LMFAO just kidding not coming.
+
 ## How to Use
 
 1. Once installed, the PhishMeNot icon will appear on your browser toolbar.
