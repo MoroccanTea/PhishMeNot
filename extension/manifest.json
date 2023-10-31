@@ -1,0 +1,22 @@
+{
+    "manifest_version" : 2,
+    "name" : "PhishMeNot",
+    "description" : "PhishMeNot is a browser extension designed to combat phishing attempts by analyzing the emails and websites you visit. It monitors for suspicious activity and alerts you in real-time, providing an extra layer of security against phishing threats.",
+    "version" : "0.1",
+    "icons" : {
+        "16" : "/Images/icon16.png",
+        "48" : "/Images/icon48.png",
+        "128" : "/Images/icon128.png"
+    },
+    "page_action" : {
+        "default_icon" : {
+            "16" : "/Images/icon16.png",
+            "48" : "/Images/icon48.png",
+            "128" : "/Images/icon128.png"
+        }
+    },
+    "content_scripts" : [{
+        "matches" : ["https://www.google.com/*"],
+        "css" : ["main.css"]
+    }]
+}
