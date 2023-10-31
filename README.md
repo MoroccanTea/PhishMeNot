@@ -24,9 +24,6 @@ PhishMeNot is a browser extension designed to combat phishing attempts by analyz
 2. Search for 'PhishMeNot'.
 3. Click 'Add to Firefox'.
 
-### Safari
-
-Safari support coming soon.
 
 ## How to Use
 
