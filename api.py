@@ -13,7 +13,7 @@ def check_ssl(hostname):
         return True
     except Exception:
         return False
-
+    
 def check_russian_chars(domain):
     try:
         domain.encode('idna').decode('ascii')
