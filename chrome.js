@@ -2,8 +2,8 @@
 chrome.webRequest.onBeforeRequest.addListener(
   function(details) {
     const url = new URL(details.url);
-
-    fetch('http://localhost:5000/analyze', {
+  
+    const fetchPromise = fetch('http://localhost:5000/analyze', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -19,8 +19,26 @@ chrome.webRequest.onBeforeRequest.addListener(
         alert("Potential phishing site detected.");
       }
     });
+
+    // API might be off or dead, Disable extension if it takes too long
+    const timeoutPromise = new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve('timeout');
+      }, 5000);
+    });
+    
+    
+    Promise.race([fetchPromise, timeoutPromise])
+    .then(result => {
+      if (result === 'timeout') {
+        console.error('Request timed out. Disabling extension.');
+        chrome.runtime.reload();
+      }
+    })
+    .catch(error => {
+      console.error(`An error occurred: ${error}`);
+    });
+
   },
-  { urls: ["<all_urls>"] },
-  []
+  { urls: ["<all_urls>"] }
 );
-  
