@@ -1,4 +1,4 @@
 Flask==3.0.0
 idna==3.3
 pyOpenSSL==23.3.0
-requests==2.27.1
+requests==2.31.0
