@@ -1,15 +1,19 @@
 from flask import Flask, request, jsonify
 from OpenSSL import SSL
 import requests
+import ssl
 import idna
 
 app = Flask(__name__)
 
 def check_ssl(hostname):
-    #TODO: Logic to validate SSL certificate
+    #Logic to validate SSL certificate
+    try:
+        ssl.get_server_certificate((hostname, 443))
+        return True
+    except Exception:
+        return False
     
-    return True
-
 def check_russian_chars(domain):
     try:
         domain.encode('idna').decode('ascii')
@@ -19,12 +23,12 @@ def check_russian_chars(domain):
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
-    data = request.json
+    data = request.json()
     url = data.get('url')
     hostname = data.get('hostname')
 
     #TODO: Check URL against a database or some other logic
-    
+    response = requests.get(url)
 
     # Check SSL certificate
     ssl_valid = check_ssl(hostname)
@@ -38,3 +42,4 @@ def analyze():
 
 if __name__ == '__main__':
     app.run(port=5000)
+
