@@ -1,0 +1,23 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --popup-width: 600px;
+    --popup-height: 430px;
+    --ivory: #FEFEF4ff;
+    --prussian-blue: #012536ff;
+    --charcoal: #364954ff;
+    --ash-gray: #A5AFAEff;
+    --ash-gray-2: #B5CAC8ff;
+}
+
+html,
+body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--prussian-blue);
+    width: var(--popup-width);
+    height: var(--popup-height);
+}
