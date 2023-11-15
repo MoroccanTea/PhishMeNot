@@ -9,10 +9,12 @@
 	  "service_worker": "chrome.js"
 	},
 	"action": {
-	  "default_popup": "popup.html",
+	  "default_popup": "popup_analyse_scan.html",
 	  "default_icon": {
 		"16": "images/icon_16.png",
 		"32": "images/icon_32.png",
+		"48": "images/icon_48.png",
+		"128": "images/icon_128.png",
 		"192": "images/icon_192.png"
 	  }
 	}
