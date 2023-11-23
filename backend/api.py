@@ -5,6 +5,7 @@ import ssl
 import idna
 import os
 from dotenv import load_dotenv
+from html import escape
 
 # Load environment variables
 load_dotenv()
@@ -56,14 +57,21 @@ def login():
 def authorized():
     resp = google.authorized_response()
     if resp is None or resp.get('access_token') is None:
-        return 'Access denied: reason={0} error={1}'.format(
-            request.args['error_reason'],
-            request.args['error_description']
-        )
+
+        # Sanitize the user input to prevent XSS attacks
+        error_reason = escape(request.args.get('error_reason', ''))
+        error_description = escape(request.args.get('error_description', ''))
+        return f'Access denied: reason={error_reason} error={error_description}'
+    
     session['google_token'] = (resp['access_token'], '')
     user_info = google.get('userinfo')
-    return 'Logged in as id={0} name={1} redirecting to profile...'.format(
-        user_info.data['id'], user_info.data['name'])
+
+    # Sanitize the user input to prevent XSS attacks in case they are rendered
+    user_id = escape(user_info.data['id'])
+    user_name = escape(user_info.data['name'])
+    
+    return f'Logged in as id={user_id} name={user_name} redirecting to profile...'
+
 
 @google.tokengetter
 def get_google_oauth_token():
