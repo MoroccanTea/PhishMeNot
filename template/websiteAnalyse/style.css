@@ -1,0 +1,91 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+.card {
+  width: 350px;
+  height: 530px;
+}
+.card .right {
+  width: 100%;
+  position: absolute;
+  text-align: center;
+  bottom: 20px;
+}
+.card header {
+  height: 30px;
+  display: flex;
+  padding: 20px;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(217, 217, 217, 0.14);
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+}
+.card header .user_circle{
+  height: 25px;
+  width: 25px;
+  display: flex;
+  justify-content: center;
+  border-radius: 50%;
+  align-items: center;
+  background: rgba(25, 62, 248, 0.14);
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+}
+.body {
+  height: 500px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: rgba(217, 217, 217, 0.14);
+}
+.container{
+  width: 90%;
+  margin-right: auto;
+  margin-left: auto;
+  margin-top: 20px;
+}
+.container_input{
+  width: 90%;
+  margin-right: auto;
+  margin-left: auto;
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+.body input {
+  width: 90%;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 5px;
+  background: #fff;
+  border: none;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+}
+.body button {
+  height: 30px;
+  background: none;
+  border: none;
+}
+.item_analyse{
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+.resultat{
+  color: green;
+  font-size: larger;
+}
+.status{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+}
+.status img{
+  height: 50px;
+  width: 50px;
+  color: green;
+}
