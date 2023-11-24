@@ -24,6 +24,8 @@ If you're capable, use our public PGP key to encrypt your message for enhanced s
 
 ### Public Key
 
+[REDACTED TEMPORARILY]
+
 ## Security protocols
 
 - All data at rest and in transit is encrypted.
