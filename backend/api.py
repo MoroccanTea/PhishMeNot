@@ -70,33 +70,6 @@ def index():
     """
     return 'Welcome to PhishMeNot API'
 
-@app.route('/oauth/login')
-def oauth_login():
-    """
-    Function to handle the Google OAuth login.
-
-    returns:
-        str: Redirects the user to the Google OAuth login page.
-    """
-    redirect_uri = url_for('oauth_authorized', _external=True)
-    return google.authorize_redirect(redirect_uri)
-
-@app.route('/oauth/authorized')
-def oauth_authorized():
-    """
-    Function to handle the Google OAuth login callback.
-
-    Returns:
-        str: The success or failure message.
-    """
-    token = google.authorize_access_token()
-    if not token:
-        return 'Access denied or login failed', 400
-    session['google_token'] = token
-    user_info = google.get('userinfo').json()
-    session['user'] = user_info
-    return f'Logged in as {user_info["name"]}'
-
 def get_google_oauth_token():
     """
     Function to get the Google OAuth token.
@@ -104,7 +77,26 @@ def get_google_oauth_token():
     Returns:
         str: The Google OAuth token.
     """
-    return session.get('google_token')
+    return session.get('idToken', None)
+
+
+# NOT TESTED
+def refresh_google_oauth_token():
+    """
+    Function to refresh the Google OAuth token.
+
+    Returns:
+        str: The Google OAuth token.
+    """
+    token = get_google_oauth_token()
+    if token:
+        resp = google.get('https://www.googleapis.com/oauth2/v3/userinfo')
+        user_info = resp.json()
+        session['user'] = user_info
+        return token
+    else:
+        return None
+    
 
 @app.route('/auth/virustotal/link', methods=['POST'])
 def link_virustotal_account():

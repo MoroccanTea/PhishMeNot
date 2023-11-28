@@ -1,9 +1,9 @@
 {
 	"manifest_version": 3,
 	"name": "PhishMeNot",
-	"version": "1.0.0",
+	"version": "0.1.0",
 	"description": "PhishMeNot allows you to surf the web and check your email safely by warning you of suspected phishing attempts.",
-	"permissions": ["storage", "activeTab", "webRequest"],
+	"permissions": ["storage", "activeTab", "webRequest", "identity", "cookies", "tabs", "notifications", "unlimitedStorage"],
 	"host_permissions": ["<all_urls>"],
 	"background": {
 	  "service_worker": "static/js/background.js"
