@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FishMeNot Feedback Form</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+  }
+  .feedback-form {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  .feedback-form h2 {
+    color: #333;
+    text-align: center;
+  }
+  .feedback-form label {
+    display: block;
+    margin-top: 20px;
+  }
+  .feedback-form input[type="text"],
+  .feedback-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  .feedback-form .rating {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+  }
+  .feedback-form .rating input {
+    display: none;
+  }
+  .feedback-form .rating label {
+    display: block;
+    width: 40px;
+    border: 1px solid #ccc;
+    text-align: center;
+    border-radius: 5px;
+    background: #f8f8f8;
+    cursor: pointer;
+  }
+  .feedback-form .rating label:hover,
+  .feedback-form .rating input:checked + label {
+    background: #e0e0e0;
+  }
+  .feedback-form button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 4px;
+    background: #333;
+    color: white;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="feedback-form">
+  <h2>FishMeNot Feedback Form</h2>
+  <form action="/submit-feedback" method="post">
+    <label for="service-satisfaction">How satisfied were you with our service?</label>
+    <div class="rating">
+      <input type="radio" id="star1" name="service_rating" value="1"><label for="star1">1</label>
+      <input type="radio" id="star2" name="service_rating" value="2"><label for="star2">2</label>
+      <input type="radio" id="star3" name="service_rating" value="3"><label for="star3">3</label>
+      <input type="radio" id="star4" name="service_rating" value="4"><label for="star4">4</label>
+      <input type="radio" id="star5" name="service_rating" value="5"><label for="star5">5</label>
+    </div>
+    
+    <!-- Add additional questions here in the same format as above -->
+
+    <label for="improvement">What aspects could be improved?</label>
+    <textarea id="improvement" name="improvement" rows="4"></textarea>
+
+    <button type="submit">Submit Feedback</button>
+  </form>
+</div>
+
+</body>
+</html>
