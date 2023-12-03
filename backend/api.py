@@ -69,15 +69,6 @@ def check_ssl(hostname):
         return {'valid': False, 'reason': str(e)}
     
 def check_russian_chars(domain):
-    """
-    Check if the given domain contains Russian characters.
-
-    Args:
-        domain (str): The domain to check.
-
-    Returns:
-        bool: True if the domain does not contain Russian characters, False otherwise.
-    """
     try:
         domain.encode('idna').decode('ascii')
         return True
@@ -116,19 +107,30 @@ def get_google_oauth_token():
 
 #TODO: TEST THIS
 def refresh_google_oauth_token():
-    """
-    Function to refresh the Google OAuth token.
-
-    Returns:
-        str: The Google OAuth token.
-    """
-    token = get_google_oauth_token()
-    if token:
-        resp = google.get('https://www.googleapis.com/oauth2/v3/userinfo')
-        user_info = resp.json()
-        session['user'] = user_info
-        return token
-    else:
+    try:
+        token = get_google_oauth_token()
+        if token:
+            creds = Credentials.from_authorized_user_info(token)
+            if creds and creds.expired:
+                creds.refresh(Request())
+                token_response = {
+                    'access_token': creds.token,
+                    'refresh_token': creds.refresh_token,
+                    'expires_at': creds.expiry.timestamp(),
+                }
+                session['google_token'] = token_response
+                print("Token refreshed successfully.")
+                return token_response['access_token']
+            else:
+                return token
+        else:
+            print("No token to refresh.")
+            return None
+    except RefreshError as e:
+        print(f"Error refreshing token: {str(e)}")
+        return None
+    except Exception as e:
+        print(f"Error refreshing token: {str(e)}")
         return None
     
 
