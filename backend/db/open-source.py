@@ -1,11 +1,14 @@
-import pymysql
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey
+import os
 
+
+load_dotenv()
 # Declare the database engine
-engine = create_engine('mysql+pymysql://root@localhost:3306/ORM', echo=True)
+engine = create_engine("mysql://", os.getenv('DATABASE_CONNECTION_URL'), echo=True)
 
 # Create a declarative base class for tables
 Base = declarative_base()

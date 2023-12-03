@@ -1,19 +1,17 @@
-
-
 chrome.runtime.onInstalled.addListener(function() {
-    //initiateAuthFlow(); - No need to force login on install
+    
 });
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    if (request.action === "login") {
-        handleLogin();
+    if (request.action === "googleLogin") {
+        handleGoogleLogin();
     }
 });
 
 
 // LOGIN using Google
-function handleLogin() {
-    const clientId = '1012335321307-toffck12nta79m0ncgslrah50tm6rc5d.apps.googleusercontent.com'; //TODO: Retrieve from .env 
+function handleGoogleLogin() {
+    const clientId = '1012335321307-toffck12nta79m0ncgslrah50tm6rc5d.apps.googleusercontent.com'; //TODO: Retrieve from .env or some other config file
     const scopes = 'email profile'; // Other scopes will be added as needed an depending on the user settings
     const redirectUri = chrome.identity.getRedirectURL(); // This will be used by Google for redirecting after authentication
     const authUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&response_type=id_token&access_type=offline&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}`;
@@ -51,10 +49,47 @@ function handleLogin() {
 chrome.storage.sync.get('user', function(data) {
     if (data.user) {
         //TODO: Use the user information to display it in the popup
+        console.log("User information retrieved from storage", data.user);
     } else {
-        console.log("No user information found, not logged in using Google");
+        console.warn("No user information found, not logged in using Google");
     }
 });
+
+
+//TODO: MOVE OAUTH TO BACKEND
+function refreshAccessToken(refreshToken) {
+    const clientId = ''; // DISABLED
+    const clientSecret = ''; // DISABLED
+    const refreshUrl = `https://accounts.google.com/o/oauth2/token`;
+
+    const body = {
+        client_id: clientId,
+        client_secret: clientSecret,
+        refresh_token: refreshToken,
+        grant_type: 'refresh_token'
+    };
+
+    fetch(refreshUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams(body)
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Handle new access token: store it
+        const accessToken = data.access_token;
+        console.log('New access token:', accessToken);
+        chrome.storage.sync.set({ idToken: accessToken }, function() {
+            console.log("Access token saved.");
+        });
+    })
+    .catch(error => {
+        console.error('Error refreshing access token:', error);
+    });
+}
+
 
 // This function is used to decode the JWT token and extract the user information
 function parseJwt (idtoken) {
