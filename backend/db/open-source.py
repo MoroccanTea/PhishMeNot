@@ -1,11 +1,14 @@
-import pymysql
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey
+import os
 
+
+load_dotenv()
 # Declare the database engine
-engine = create_engine('mysql+pymysql://root@localhost:3306/ORM', echo=True)
+engine = create_engine("mysql://", os.getenv('DATABASE_CONNECTION_URL'), echo=True)
 
 # Create a declarative base class for tables
 Base = declarative_base()
@@ -16,6 +19,10 @@ class User(Base):
     UserID = Column(Integer, primary_key=True, autoincrement=True)
     Username = Column(String(255), nullable=False)
     Password = Column(String(255), nullable=False)
+    IsGoogleAccount = Column(Boolean, nullable=False)
+    GoogleToken = Column(String(255), nullable=True)  # Add Google token field if he used google account
+    Email = Column(String(255))
+    VirusTotalAPIKey = Column(String(255))
 
 # Define the 'Websites' table
 class Website(Base):
@@ -40,6 +47,9 @@ class EmailScan(Base):
     UserID = Column(Integer, ForeignKey('Users.UserID'), nullable=False)
     LastScanDate = Column(Date, nullable=False)
     IsSecure = Column(Boolean, nullable=False)
+    IsSuspiciousEmailAddress = Column(Boolean, nullable=False)
+    SenderAddress = Column(String(255), nullable=True)
+    IsSenderBlacklisted = Column(Boolean, nullable=False)
 
 # Define the 'WebsiteStatistics' table
 class WebsiteStatistic(Base):
@@ -51,6 +61,18 @@ class WebsiteStatistic(Base):
     IsMalicious = Column(Boolean, nullable=False)
     IsBlacklisted = Column(Boolean, nullable=False)
     IsWhitelisted = Column(Boolean, nullable=False)
+
+def create_user(username, password, email, is_google_account, google_token):
+    session = sessionmaker(bind=engine)()
+
+    if is_google_account:
+        user = User(username=username, password=password, email=email, google_token=google_token)
+    else:
+        user = User(username=username, password=password, email=email)
+
+    session.add(user)
+    session.commit()
+
 
 # Create the tables in the database
 Base.metadata.create_all(engine)

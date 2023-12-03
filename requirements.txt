@@ -1,5 +1,10 @@
 Authlib==1.2.1
 Flask==3.0.0
 idna==3.3
+PyJWT==2.8.0
+pyOpenSSL==23.3.0
+pyOpenSSL==23.3.0
 python-dotenv==1.0.0
-requests==2.31.0
+Requests==2.31.0
+SQLAlchemy==2.0.23
+Werkzeug==3.0.1
