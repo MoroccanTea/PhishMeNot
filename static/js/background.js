@@ -55,9 +55,11 @@ chrome.storage.sync.get('user', function(data) {
     }
 });
 
+
+//TODO: MOVE OAUTH TO BACKEND
 function refreshAccessToken(refreshToken) {
-    const clientId = 'YOUR_CLIENT_ID';
-    const clientSecret = 'YOUR_CLIENT_SECRET'; // Ensure this is kept secure
+    const clientId = ''; // DISABLED
+    const clientSecret = ''; // DISABLED
     const refreshUrl = `https://accounts.google.com/o/oauth2/token`;
 
     const body = {
