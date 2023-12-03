@@ -9,7 +9,7 @@
 	  "service_worker": "static/js/background.js"
 	},
 	"action": {
-	  "default_popup": "popup.html",
+	  "default_popup": "views/auth/auth.html",
 	  "default_icon": {
 		"16": "static/images/icon_16.png",
 		"32": "static/images/icon_32.png",

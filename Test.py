@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import Mock, patch
-from check_signatures import check_signatures  # Assurez-vous de remplacer "your_module" par le nom réel de votre module
+from check_signatures import check_signatures 
 
 class TestCheckSignatures(unittest.TestCase):
     
