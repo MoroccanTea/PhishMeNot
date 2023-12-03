@@ -60,7 +60,7 @@ def check_ssl(hostname):
 
             # Check expiration
             exp_date = ssl.cert_time_to_seconds(cert['notAfter'])
-            if exp_date < datetime.datetime.now().timestamp():
+            if exp_date < time.datetime.now().timestamp():
                 return {'valid': False, 'reason': 'Certificate expired'}
 
         return {'valid': True, 'reason': ''}
@@ -206,7 +206,7 @@ def analyze_url():
         vt_result = analysis_response.json()
 
         # Logic to determine if URL is safe based on VirusTotal result and other checks
-        if not ssl_valid or not russian_chars_valid or 'malicious' in vt_result['data']['attributes']['status']:
+        if not ssl_check['valid'] or not russian_chars_valid or 'malicious' in vt_result['data']['attributes']['status']:
             # TODO: Add logic to set score based on the result
             return jsonify({"status": "unsafe"}), 200
         else:
