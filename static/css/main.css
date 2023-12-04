@@ -21,3 +21,19 @@ body {
     width: var(--popup-width);
     height: var(--popup-height);
 }
+
+.logo img{
+    margin: 1.5rem 0;
+    width: 7rem;
+  }
+
+footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 50px;
+    color: var(--ivory);
+    text-align: center;
+    font-size: 0.8rem;
+    padding-top: 1rem;
+  }

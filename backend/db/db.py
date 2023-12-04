@@ -1,65 +1,78 @@
-import mysql.connector
-from mysql.connector import Error
+from dotenv import load_dotenv
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey
 import os
 
 
+load_dotenv()
+# Declare the database engine
+engine = create_engine("mysql://", os.getenv('DATABASE_CONNECTION_URL'), echo=True)
 
-def encrypt_decrypt_password(action, password, key):
-    cipher_suite = Fernet(key)
-    if action == 'encrypt':
-        encrypted_password = cipher_suite.encrypt(password.encode())
-        return encrypted_password
-    elif action == 'decrypt':
-        decrypted_password = cipher_suite.decrypt(password).decode()
-        return decrypted_password
-    
+# Create a declarative base class for tables
+Base = declarative_base()
+
+# Define the 'Users' table
+class User(Base):
+    __tablename__ = 'Users'
+    UserID = Column(Integer, primary_key=True, autoincrement=True)
+    Username = Column(String(255), nullable=False)
+    Password = Column(String(255), nullable=False)
+    IsGoogleAccount = Column(Boolean, nullable=False)
+    GoogleToken = Column(String(255), nullable=True)  # Add Google token field if he used google account
+    Email = Column(String(255))
+    VirusTotalAPIKey = Column(String(255))
+
+# Define the 'Websites' table
+class Website(Base):
+    __tablename__ = 'Websites'
+    WebsiteID = Column(Integer, primary_key=True, autoincrement=True)
+    URL = Column(String(255), nullable=False)
+    LastScannedDate = Column(Date, nullable=False)
+    IsSecure = Column(Boolean, nullable=False)
+
+# Define the 'Scans' table
+class Scan(Base):
+    __tablename__ = 'Scans'
+    ScanID = Column(Integer, primary_key=True, autoincrement=True)
+    WebsiteID = Column(Integer, ForeignKey('Websites.WebsiteID'), nullable=False)
+    ScanDate = Column(Date, nullable=False)
+    PhishingScore = Column(Integer, nullable=False)
+
+# Define the 'EmailScans' table
+class EmailScan(Base):
+    __tablename__ = 'EmailScans'
+    EmailScanID = Column(Integer, primary_key=True, autoincrement=True)
+    UserID = Column(Integer, ForeignKey('Users.UserID'), nullable=False)
+    LastScanDate = Column(Date, nullable=False)
+    IsSecure = Column(Boolean, nullable=False)
+    IsSuspiciousEmailAddress = Column(Boolean, nullable=False)
+    SenderAddress = Column(String(255), nullable=True)
+    IsSenderBlacklisted = Column(Boolean, nullable=False)
+
+# Define the 'WebsiteStatistics' table
+class WebsiteStatistic(Base):
+    __tablename__ = 'WebsiteStatistics'
+    StatisticID = Column(Integer, primary_key=True, autoincrement=True)
+    WebsiteID = Column(Integer, ForeignKey('Websites.WebsiteID'), nullable=False)
+    VisitDate = Column(Date, nullable=False)
+    IsSafe = Column(Boolean, nullable=False)
+    IsMalicious = Column(Boolean, nullable=False)
+    IsBlacklisted = Column(Boolean, nullable=False)
+    IsWhitelisted = Column(Boolean, nullable=False)
+
+def create_user(username, password, email, is_google_account, google_token):
+    session = sessionmaker(bind=engine)()
+
+    if is_google_account:
+        user = User(username=username, password=password, email=email, google_token=google_token)
+    else:
+        user = User(username=username, password=password, email=email)
+
+    session.add(user)
+    session.commit()
 
 
-def create_connection():
-    """CrÃ©e et renvoie une connexion Ã  la base de donnÃ©es MySQL."""
-    try:
-        connection = mysql.connector.connect(
-            host='localhost',  # Mettez votre adresse IP ou nom d'hÃ´te MySQL
-            database='orm',
-            user='root',
-            password=''
-        )
-        if connection.is_connected():
-            print(f"ConnectÃ© Ã  la base de donnÃ©es MySQL - Version {connection.get_server_info()}")
-            return connection
-
-    except Error as e:
-        print(f"Erreur de connexion Ã  la base de donnÃ©es MySQL: {e}")
-        return None
-
-def close_connection(connection):
-    """Ferme la connexion Ã  la base de donnÃ©es."""
-    if connection.is_connected():
-        connection.close()
-        print("La connexion Ã  la base de donnÃ©es MySQL a Ã©tÃ© fermÃ©e.")
-
-def insert_password(connection, user,  password_type, name, password):
-    try:
-        cursor = connection.cursor()
-
-        key = os.getenv('CRYPTO_SECRET_KEY')
-
-        encrypted_password = encrypt_decrypt_password('encrypt', password, key)
-
-        sql = "INSERT INTO passwords (user, type, name, password,) VALUES (%s, %s, %s, %s, %s)"
-        values = (user, password_type, name, encrypted_password)
-        cursor.execute(sql, values)
-
-        connection.commit()
-        print("Mot de passe insÃ©rÃ© avec succÃ¨s.")
-
-    except Error as e:
-        print(f"Erreur lors de l'insertion du mot de passe : {e}")
-
-
-
-# Test de la connexion
-if __name__ == "__main__":
-    db_connection = create_connection()
-    if db_connection:
-        close_connection(db_connection)
+# Create the tables in the database
+Base.metadata.create_all(engine)

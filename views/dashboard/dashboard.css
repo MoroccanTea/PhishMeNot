@@ -1,38 +1,25 @@
-* {
-  margin: 0;
-  padding: 0;
-}
-.card {
-  width: 350px;
-  height: 500px;
-}
 .card .right {
   width: 100%;
   position: absolute;
   text-align: center;
   bottom: 20px;
 }
-.card header {
-  height: 30px;
-  display: flex;
-  padding: 20px;
-  align-items: center;
-  background: rgba(217, 217, 217, 0.14);
-  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+
+.logo {
+  text-align: center;
 }
-.body {
-  height: 470px;
-  width: 100%;
+
+
+.content {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  background: rgba(217, 217, 217, 0.14);
 }
 .btn_filter {
   width: 100%;
   display: flex;
-  justify-content: flex-end;
+  justify-content: right;
   margin-top: 10px;
 }
 .btn_filter button {
@@ -44,12 +31,12 @@
 }
 .list_history {
   width: 90%;
+  max-height: 250px;
   margin-right: auto;
   margin-left: auto;
   margin-top: 10px;
   display: flex;
   flex-direction: column;
-  height: 310px;
   overflow: auto;
 }
 .list_history .item {
@@ -91,13 +78,12 @@
   height: 25px !important;
   width: 25px !important;
 }
-.static {
-  width: 95%;
-  height: 60px;
+.statistics {
+  margin: 1rem 0;
   display: flex;
   justify-content: space-between;
 }
-.static .item {
+.statistics .item {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -111,6 +97,11 @@
   align-items: center;
   justify-content: center;
 }
+
+.danger-tag{
+  color: var(--ivory);
+}
+
 .circle_in {
   height: 35px;
   width: 35px;
