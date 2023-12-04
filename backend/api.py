@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify, redirect, url_for, session
+from flask_cors import CORS
 import requests
 import ssl
+import socket
 import idna
 import os
 import logging
@@ -11,13 +13,10 @@ import hashlib
 from werkzeug.utils import secure_filename
 import jwt
 import time
-
 from authlib.integrations.base_client.errors import AuthlibBaseError
-from googleapiclient.discovery import build
 from google.auth.transport.requests import Request
 from google.auth.exceptions import RefreshError
 from google.oauth2.credentials import Credentials
-from db.db import create_connection, close_connection, insert_password, encrypt_decrypt_password
 
 
 # Configure logging
@@ -28,6 +27,7 @@ env_path = os.path.join(os.path.dirname(__file__), '.env')
 load_dotenv(dotenv_path=env_path)
 
 app = Flask("PhishMeNot API V0.1.0")
+CORS(app, resources={r"*": {"origins": "*"}}, supports_credentials=True)
 app.secret_key = os.getenv('APP_SECRET_KEY')
 
 # Set cookie security options
@@ -40,12 +40,14 @@ app.config.update(
 # OAuth Configuration
 oauth = OAuth(app)
 google = oauth.register(
-    'google',
+    name='google',
     client_id=os.getenv('GOOGLE_CLIENT_ID'),
     client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
-    authorize_url='https://accounts.google.com/o/oauth2/auth',
     access_token_url='https://accounts.google.com/o/oauth2/token',
-    client_kwargs={'scope': 'https://www.googleapis.com/auth/userinfo.email'},
+    authorize_url='https://accounts.google.com/o/oauth2/auth',
+    api_base_url='https://www.googleapis.com/oauth2/v1/',
+    jwks_uri='https://www.googleapis.com/oauth2/v3/certs',
+    client_kwargs={'scope': 'openid email profile'}
 )
 
 def check_ssl(hostname):
@@ -60,15 +62,15 @@ def check_ssl(hostname):
     """
     try:
         context = ssl.create_default_context()
-        with context.wrap_socket(ssl.socket.socket(), server_hostname=hostname) as s:
-            s.connect((hostname, 443))
-            cert = s.getpeercert()
-            ssl.match_hostname(cert, hostname)
 
-            # Check expiration
-            exp_date = ssl.cert_time_to_seconds(cert['notAfter'])
-            if exp_date < time.datetime.now().timestamp():
-                return {'valid': False, 'reason': 'Certificate expired'}
+        with socket.create_connection((hostname, 443)) as sock:
+            with context.wrap_socket(sock, server_hostname=hostname) as ssock:
+                cert = ssock.getpeercert()
+
+                # Check expiration
+                exp_date = ssl.cert_time_to_seconds(cert['notAfter'])
+                if exp_date < time.time():
+                    return {'valid': False, 'reason': 'Certificate expired'}
 
         return {'valid': True, 'reason': ''}
     except Exception as e:
@@ -93,17 +95,29 @@ def index():
     """
     return 'Welcome to PhishMeNot API'
 
-@app.route('/auth/google/login', methods=['POST'])
-def acquire_google_oauth_token_from_front():
-    """
-    Acquire the Google OAuth token from the frontend.
-    """
-    idToken = request.json.get('idToken')
-    if idToken:
-        session['idToken'] = idToken
-        return idToken
+# Google auth
+@app.route('/auth/google/login', methods=['GET'])
+def login_google():
+    return google.authorize_redirect(url_for('google_authorize', _external=True))
+
+# Google auth callback
+@app.route('/auth/google/authorize', methods=['GET'])
+def google_authorize():
+    try:
+        token = google.authorize_access_token()
+        session['idToken'] = token
+        session['user'] = google.get('userinfo').json()['email']
+        return f'Logged in as {session["user"]}'
+    except AuthlibBaseError as e:
+        logging.error(f"Error authenticating with Google: {e}")
+        return 'Error authenticating with Google'
+
+@app.route('/auth/status', methods=['GET'])
+def auth_status():
+    if 'user' in session:
+        return jsonify({'authenticated': True, 'user': session['user']})
     else:
-        return jsonify({"status": "error", "message": "ID token is missing"}), 400
+        return jsonify({'authenticated': False})
 
 def get_google_oauth_token():
     """
@@ -111,25 +125,25 @@ def get_google_oauth_token():
     """
     return session.get('idToken', None)
 
-
 #TODO: TEST THIS
 def refresh_google_oauth_token():
     try:
-        token = get_google_oauth_token()
-        if token:
-            creds = Credentials.from_authorized_user_info(token)
+        token_data = get_google_oauth_token()
+        if token_data:
+            creds = Credentials.from_authorized_user_info(token_data)
             if creds and creds.expired:
+                old_refresh_token = token_data.get('refresh_token')
                 creds.refresh(Request())
                 token_response = {
                     'access_token': creds.token,
-                    'refresh_token': creds.refresh_token,
+                    'refresh_token': creds.refresh_token or old_refresh_token,
                     'expires_at': creds.expiry.timestamp(),
                 }
-                session['google_token'] = token_response
+                session['idToken'] = token_response
                 print("Token refreshed successfully.")
-                return token_response['access_token']
+                return token_response['idToken']
             else:
-                return token
+                return token_data['idToken']
         else:
             print("No token to refresh.")
             return None
@@ -139,7 +153,6 @@ def refresh_google_oauth_token():
     except Exception as e:
         print(f"Error refreshing token: {str(e)}")
         return None
-    
 
 @app.route('/auth/virustotal/link', methods=['POST'])
 def link_virustotal_account():
@@ -176,7 +189,7 @@ def analyze_url():
         json: JSON object with the status of the URL ('safe' or 'unsafe').
     """
     # Check for authentication
-    if 'idToken' or 'user' not in session:
+    if 'idToken' not in session and 'user' not in session:
         return jsonify({"status": "error", "message": "Unauthenticated, please login first"}), 401
 
     data = request.json
@@ -216,11 +229,12 @@ def analyze_url():
 
         # Logic to determine if URL is safe based on VirusTotal result and other checks
         if not ssl_check['valid'] or not russian_chars_valid or 'malicious' in vt_result['data']['attributes']['status']:
+            print("URL is unsafe")
             # TODO: Add logic to set score based on the result
             return jsonify({"status": "unsafe"}), 200
         else:
+            print(f"URL:{url} is safe")
             return jsonify({"status": "safe"}), 200
-
     except requests.exceptions.RequestException as e:
         return jsonify({"status": "error", "message": "Network error: " + str(e)}), 500
     except Exception as e:
@@ -317,141 +331,6 @@ def is_token_expired(token):
     except Exception as e:
         logging.error(f"Error decoding JWT: {e}")
         return True
-    
-
-# ROUTES GESTION PASSWORDS
-
-@app.route('/new_passwords', methods=['POST'])
-def store_password(user, password_type, name, password):
-    if 'google_token' not in session:
-        return jsonify({"status": "error", "message": "Unauthenticated, please login first"}), 401
-    db_connection = create_connection()
-
-    if db_connection:
-        insert_password(db_connection, user, password_type, name, password)
-        close_connection(db_connection)
-    
-
-@app.route('/get_passwords', methods=['GET'])
-def get_passwords():
-    if 'google_token' not in session:
-        return jsonify({"status": "error", "message": "Unauthenticated, please login first"}), 401
-    user = request.args.get('user')
-
-    db_connection = create_connection()
-
-    if db_connection:
-        try:
-            cursor = db_connection.cursor()
-
-            
-            sql = "SELECT type, name FROM passwords WHERE user = %s"
-            cursor.execute(sql, (user,))
-
-            results = cursor.fetchall()
-
-            password_list = [{'type': result[0], 'name': result[1]} for result in results]
-
-            return jsonify({'passwords': password_list})
-
-        except Exception as e:
-            return jsonify({'error': f"Erreur lors de la rÃ©cupÃ©ration des mots de passe : {str(e)}"})
-
-        finally:
-            close_connection(db_connection)
-    else:
-        return jsonify({'error': "Impossible de se connecter Ã  la base de donnÃ©es"})
-
-
-@app.route('/delete_password/<int:password_id>', methods=['DELETE'])
-def delete_password(password_id):
-    if 'google_token' not in session:
-        return jsonify({"status": "error", "message": "Unauthenticated, please login first"}), 401
-    db_connection = create_connection()
-
-    if db_connection:
-        try:
-            cursor = db_connection.cursor()
-
-            sql = "DELETE FROM passwords WHERE id = %s"
-            cursor.execute(sql, (password_id,))
-
-            db_connection.commit()
-
-            return jsonify({'message': f"Mot de passe avec l'ID {password_id} supprimÃ© avec succÃ¨s"})
-
-        except Exception as e:
-            return jsonify({'error': f"Erreur lors de la suppression du mot de passe : {str(e)}"})
-
-        finally:
-            close_connection(db_connection)
-
-    else:
-        return jsonify({'error': "Impossible de se connecter Ã  la base de donnÃ©es"})
-
-
-@app.route('/delete_passwords', methods=['DELETE'])
-def delete_passwords():
-    if 'google_token' not in session:
-        return jsonify({"status": "error", "message": "Unauthenticated, please login first"}), 401
-    user = request.args.get('user')
-
-    db_connection = create_connection()
-
-    if db_connection:
-        try:
-            cursor = db_connection.cursor()
-
-            sql = "DELETE FROM passwords WHERE username = %s"
-            cursor.execute(sql, (user,))
-
-            db_connection.commit()
-
-            return jsonify({'message': f"Mots de passe pour {user} supprimÃ©s avec succÃ¨s."})
-
-        except Exception as e:
-            return jsonify({'error': f"Erreur lors de la suppression des mots de passe : {str(e)}"})
-
-        finally:
-            close_connection(db_connection)
-
-    else:
-        return jsonify({'error': "Impossible de se connecter Ã  la base de donnÃ©es"})
-
-
-@app.route('/update_password', methods=['PUT'])
-def update_password():
-    if 'google_token' not in session:
-        return jsonify({"status": "error", "message": "Unauthenticated, please login first"}), 401
-    data = request.get_json()
-
-    user = data.get('user')
-    new_password = data.get('new_password')
-
-    db_connection = create_connection()
-
-    if db_connection:
-        key = os.getenv('CRYPTO_SECRET_KEY')
-        try:
-            cursor = db_connection.cursor()
-
-            encrypted_password = encrypt_decrypt_password('encrypt', new_password, key)
-
-            sql = "UPDATE passwords SET password = %s WHERE username = %s"
-            cursor.execute(sql, (encrypted_password, user))
-
-            db_connection.commit()
-
-            return jsonify({'message': f"Mot de passe pour {user} mis Ã  jour avec succÃ¨s."})
-
-        except Exception as e:
-            return jsonify({'error': f"Erreur lors de la mise Ã  jour du mot de passe : {str(e)}"})
-
-        finally:
-            close_connection(db_connection)
-
-    else:
-        return jsonify({'error': "Impossible de se connecter Ã  la base de donnÃ©es"})
 
 
 @app.route('/logout', methods=['GET, POST'])
