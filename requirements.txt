@@ -2,7 +2,7 @@ Authlib==1.2.1
 dmarc==1.0.3
 Flask==3.0.0
 flask_cors==4.0.0
-idna==3.3
+idna==3.7
 mysql_connector_repackaged==0.3.1
 protobuf==4.25.1
 PyJWT==2.8.0
